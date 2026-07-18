@@ -15,7 +15,11 @@ router.post('/otp/send', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid phone number' });
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    // Fixed OTP for specific demo tester
+    const DEMO_PHONE = '+919833279693';
+    const otp = (phone === DEMO_PHONE && process.env.DEMO_OTP)
+      ? process.env.DEMO_OTP
+      : Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
 
     otpCache.set(phone, { otp, expiresAt, attempts: 0 });
@@ -23,7 +27,7 @@ router.post('/otp/send', async (req, res) => {
     // In production: send via Twilio
     // await twilio.messages.create({ body: `Your KeyTurn OTP is ${otp}`, from: process.env.TWILIO_PHONE_NUMBER, to: phone });
 
-    console.log(`[DEV] OTP for ${phone}: ${otp}`); // Remove in production
+    console.log(`[DEV] OTP for ${phone}: ${otp}`);
 
     res.json({ success: true, message: 'OTP sent successfully', expiresIn: 300 });
   } catch (err) {
