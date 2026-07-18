@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const { runMigrations } = require('./db/migrate');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
@@ -67,6 +68,11 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`KeyTurn API running on port ${PORT}`));
+runMigrations().then(() => {
+  server.listen(PORT, () => console.log(`KeyTurn API running on port ${PORT}`));
+}).catch(err => {
+  console.error('Startup migration error:', err.message);
+  server.listen(PORT, () => console.log(`KeyTurn API running on port ${PORT} (migration skipped)`));
+});
 
 module.exports = { app, io };
