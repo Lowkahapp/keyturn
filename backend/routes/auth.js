@@ -10,8 +10,13 @@ const otpCache = new Map();
 // POST /api/v1/auth/otp/send
 router.post('/otp/send', async (req, res) => {
   try {
-    const { phone } = req.body;
-    if (!phone || !/^\+?[6-9]\d{9}$/.test(phone.replace(/\s/g, ''))) {
+    let { phone } = req.body;
+    if (!phone) return res.status(400).json({ success: false, message: 'Phone number required' });
+
+    // Normalize: strip spaces, ensure +91 prefix
+    phone = phone.replace(/\s/g, '');
+    if (/^[6-9]\d{9}$/.test(phone)) phone = '+91' + phone;
+    if (!/^\+91[6-9]\d{9}$/.test(phone)) {
       return res.status(400).json({ success: false, message: 'Invalid phone number' });
     }
 
