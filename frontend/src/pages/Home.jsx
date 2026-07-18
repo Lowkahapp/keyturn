@@ -16,7 +16,7 @@ const SORT_OPTIONS = [
 
 const STATS = [
   { value: '2,400+', label: 'Verified Listings' },
-  { value: '₹0',     label: 'Upfront Fee' },
+  { value: '?0',     label: 'Upfront Fee' },
   { value: '4 Cities', label: 'Covered' },
   { value: '98%',    label: 'Deal Success Rate' },
 ];
@@ -34,7 +34,7 @@ const HOW_IT_WORKS = [
     icon: Handshake,
     color: 'bg-blue-50 text-blue-600',
     title: 'Find your home, negotiate freely',
-    desc: 'Browse verified listings, schedule visits, chat directly with owners, and negotiate — all without paying a rupee.',
+    desc: 'Browse verified listings, schedule visits, chat directly with owners, and negotiate � all without paying a rupee.',
   },
   {
     step: '03',
@@ -82,7 +82,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
 
-      {/* ── HERO ─────────────────────────────────────────────────────────────── */}
+      {/* -- HERO --------------------------------------------------------------- */}
       <div className="relative bg-gradient-to-br from-primary-800 via-primary-700 to-primary-500 text-white overflow-hidden">
         {/* background pattern */}
         <div className="absolute inset-0 opacity-10"
@@ -121,7 +121,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── TRUST BADGES ─────────────────────────────────────────────────────── */}
+      {/* -- TRUST BADGES ------------------------------------------------------- */}
       <div className="bg-white border-b border-gray-100 shadow-sm">
         <div className="max-w-5xl mx-auto px-4 py-6 grid grid-cols-2 md:grid-cols-4 gap-6">
           {TRUST_BADGES.map(({ icon: Icon, label, sub }) => (
@@ -138,7 +138,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── HOW IT WORKS ─────────────────────────────────────────────────────── */}
+      {/* -- HOW IT WORKS ------------------------------------------------------- */}
       <div className="max-w-5xl mx-auto px-4 py-14">
         <div className="text-center mb-10">
           <h2 className="text-3xl font-extrabold text-gray-900 mb-3">How KeyTurn Works</h2>
@@ -160,7 +160,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── PROPERTIES ───────────────────────────────────────────────────────── */}
+      {/* -- PROPERTIES --------------------------------------------------------- */}
       <div className="max-w-7xl mx-auto px-4 pb-16">
 
         {/* City tabs */}
@@ -196,7 +196,7 @@ export default function Home() {
           {activeFilters.city && (
             <p className="text-sm text-gray-500 flex items-center gap-1 mt-0.5">
               <MapPin size={13} /> {activeFilters.city}
-              {activeFilters.transaction_type && ` · ${activeFilters.transaction_type === 'rent' ? 'For Rent' : 'For Sale'}`}
+              {activeFilters.transaction_type && ` � ${activeFilters.transaction_type === 'rent' ? 'For Rent' : 'For Sale'}`}
             </p>
           )}
         </div>
@@ -221,14 +221,14 @@ export default function Home() {
           </div>
         ) : (
           <div className="text-center py-20 bg-white rounded-2xl border border-gray-100">
-            <div className="text-6xl mb-4">🏠</div>
+            <div className="text-6xl mb-4">??</div>
             <h3 className="text-xl font-semibold text-gray-700 mb-2">No properties found</h3>
             <p className="text-gray-400">Try adjusting your filters or searching a different city</p>
           </div>
         )}
       </div>
 
-      {/* ── BOTTOM CTA ───────────────────────────────────────────────────────── */}
+      {/* -- BOTTOM CTA --------------------------------------------------------- */}
       <div className="bg-primary-700 text-white py-14 px-4 text-center">
         <h2 className="text-3xl font-extrabold mb-3">Own a property? List it free.</h2>
         <p className="text-primary-200 mb-7 max-w-xl mx-auto">
