@@ -28,7 +28,7 @@
     "razorpay": "^2.9.2",
     "socket.io": "^4.6.2",
     "twilio": "^4.17.0",
-    "uuid": "^14.0.1"
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
