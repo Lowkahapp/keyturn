@@ -88,6 +88,7 @@ router.get('/', async (req, res) => {
       pagination: { page: parseInt(page), limit: parseInt(limit), total: parseInt(countRows[0].count) }
     });
   } catch (err) {
+    console.error('SEARCH ERROR:', err.message, err.stack);
     res.status(500).json({ success: false, message: err.message });
   }
 });
