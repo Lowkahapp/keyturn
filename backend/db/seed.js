@@ -1,5 +1,19 @@
 const { v4: uuidv4 } = require('uuid');
 
+// Varied apartment photos from Unsplash (free, no auth)
+const photoSets = [
+  ['https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800','https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800','https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800'],
+  ['https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800','https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800','https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800'],
+  ['https://images.unsplash.com/photo-1536376072261-38c75010e6c9?w=800','https://images.unsplash.com/photo-1615873968403-89e068629265?w=800','https://images.unsplash.com/photo-1574362848149-11496d93a7c7?w=800'],
+  ['https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=800','https://images.unsplash.com/photo-1554995207-c18c203602cb?w=800','https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800'],
+  ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800','https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?w=800','https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=800'],
+  ['https://images.unsplash.com/photo-1571939228382-b2f2b585ce15?w=800','https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=800','https://images.unsplash.com/photo-1567767292278-a4f21aa2d36e?w=800'],
+  ['https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=800','https://images.unsplash.com/photo-1616137466211-f939a420be84?w=800','https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=800'],
+  ['https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=800','https://images.unsplash.com/photo-1598928636135-d146006ff4be?w=800','https://images.unsplash.com/photo-1592595896551-12b371d546d5?w=800'],
+];
+let photoIdx = 0;
+const nextPhotos = () => JSON.stringify(photoSets[photoIdx++ % photoSets.length]);
+
 const seed = async (client) => {
   await client.query('BEGIN');
   try {
@@ -59,13 +73,13 @@ const seed = async (client) => {
         INSERT INTO properties (id, owner_id, title, property_type, transaction_type,
           address, locality, city, state, pincode, bhk, carpet_area_sqft,
           floor_number, total_floors, furnishing, rent_amount, deposit_amount,
-          verification_status, amenities, available_from)
+          verification_status, amenities, photos, available_from)
         VALUES ($1,$2,$3,'apartment','rent',$4,$5,'Bangalore','Karnataka',$6,$7,$8,$9,10,$10,$11,$12,'verified',
-          '["lift","gym","security","parking","power_backup"]'::jsonb, NOW() + INTERVAL '7 days')
+          '["lift","gym","security","parking","power_backup"]'::jsonb, $13::jsonb, NOW() + INTERVAL '7 days')
       `, [uuidv4(), pick(),
           `${p.bhk}BHK ${p.furnishing.replace(/_/g,' ')} in ${p.locality}`,
           `${p.area}, ${p.locality} Main Road, Bangalore`,
-          p.locality, p.pincode, p.bhk, p.area, p.floor, p.furnishing, p.rent, p.deposit]);
+          p.locality, p.pincode, p.bhk, p.area, p.floor, p.furnishing, p.rent, p.deposit, nextPhotos()]);
     }
 
     // ─── BANGALORE SALES ─────────────────────────────────────────────────────
@@ -81,14 +95,14 @@ const seed = async (client) => {
       await client.query(`
         INSERT INTO properties (id, owner_id, title, property_type, transaction_type,
           address, locality, city, state, pincode, bhk, carpet_area_sqft,
-          floor_number, total_floors, furnishing, sale_price, verification_status, amenities)
+          floor_number, total_floors, furnishing, sale_price, verification_status, amenities, photos)
         VALUES ($1,$2,$3,'apartment','sale',$4,$5,'Bangalore','Karnataka',$6,$7,$8,$9,12,$10,$11,'verified',
-          '["lift","gym","security","parking"]'::jsonb)
+          '["lift","gym","security","parking"]'::jsonb, $12::jsonb)
       `, [uuidv4(), pick(),
           `${p.bhk}BHK for Sale in ${p.locality}`,
           `${p.area}, ${p.locality}, Bangalore`,
           p.locality, p.pincode, p.bhk, p.area,
-          Math.floor(Math.random() * 8) + 1, p.furnishing, p.price]);
+          Math.floor(Math.random() * 8) + 1, p.furnishing, p.price, nextPhotos()]);
     }
 
     // ─── MUMBAI RENTALS ──────────────────────────────────────────────────────
@@ -106,14 +120,14 @@ const seed = async (client) => {
         INSERT INTO properties (id, owner_id, title, property_type, transaction_type,
           address, locality, city, state, pincode, bhk, carpet_area_sqft,
           floor_number, total_floors, furnishing, rent_amount, deposit_amount,
-          verification_status, amenities, available_from)
+          verification_status, amenities, photos, available_from)
         VALUES ($1,$2,$3,'apartment','rent',$4,$5,'Mumbai','Maharashtra',$6,$7,$8,$9,15,$10,$11,$12,'verified',
-          '["lift","security","parking","power_backup"]'::jsonb, NOW() + INTERVAL '14 days')
+          '["lift","security","parking","power_backup"]'::jsonb, $13::jsonb, NOW() + INTERVAL '14 days')
       `, [uuidv4(), pick(),
           `${p.bhk}BHK in ${p.locality}`,
           `${p.area}, ${p.locality}, Mumbai`,
           p.locality, p.pincode, p.bhk, p.area,
-          Math.floor(Math.random() * 12) + 1, p.furnishing, p.rent, p.deposit]);
+          Math.floor(Math.random() * 12) + 1, p.furnishing, p.rent, p.deposit, nextPhotos()]);
     }
 
     // ─── HYDERABAD RENTALS ───────────────────────────────────────────────────
@@ -131,14 +145,14 @@ const seed = async (client) => {
         INSERT INTO properties (id, owner_id, title, property_type, transaction_type,
           address, locality, city, state, pincode, bhk, carpet_area_sqft,
           floor_number, total_floors, furnishing, rent_amount, deposit_amount,
-          verification_status, amenities, available_from)
+          verification_status, amenities, photos, available_from)
         VALUES ($1,$2,$3,'apartment','rent',$4,$5,'Hyderabad','Telangana',$6,$7,$8,$9,12,$10,$11,$12,'verified',
-          '["lift","gym","security","parking","power_backup"]'::jsonb, NOW() + INTERVAL '10 days')
+          '["lift","gym","security","parking","power_backup"]'::jsonb, $13::jsonb, NOW() + INTERVAL '10 days')
       `, [uuidv4(), pick(),
           `${p.bhk}BHK in ${p.locality}`,
           `${p.area}, ${p.locality}, Hyderabad`,
           p.locality, p.pincode, p.bhk, p.area,
-          Math.floor(Math.random() * 10) + 1, p.furnishing, p.rent, p.deposit]);
+          Math.floor(Math.random() * 10) + 1, p.furnishing, p.rent, p.deposit, nextPhotos()]);
     }
 
     // ─── PUNE RENTALS ────────────────────────────────────────────────────────
@@ -154,14 +168,14 @@ const seed = async (client) => {
         INSERT INTO properties (id, owner_id, title, property_type, transaction_type,
           address, locality, city, state, pincode, bhk, carpet_area_sqft,
           floor_number, total_floors, furnishing, rent_amount, deposit_amount,
-          verification_status, amenities, available_from)
+          verification_status, amenities, photos, available_from)
         VALUES ($1,$2,$3,'apartment','rent',$4,$5,'Pune','Maharashtra',$6,$7,$8,$9,10,$10,$11,$12,'verified',
-          '["lift","security","parking","power_backup"]'::jsonb, NOW() + INTERVAL '5 days')
+          '["lift","security","parking","power_backup"]'::jsonb, $13::jsonb, NOW() + INTERVAL '5 days')
       `, [uuidv4(), pick(),
           `${p.bhk}BHK in ${p.locality}`,
           `${p.area}, ${p.locality}, Pune`,
           p.locality, p.pincode, p.bhk, p.area,
-          Math.floor(Math.random() * 8) + 1, p.furnishing, p.rent, p.deposit]);
+          Math.floor(Math.random() * 8) + 1, p.furnishing, p.rent, p.deposit, nextPhotos()]);
     }
 
     await client.query('COMMIT');

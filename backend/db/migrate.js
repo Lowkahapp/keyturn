@@ -32,14 +32,10 @@ async function runMigrations() {
     `);
     console.log('✅ Column migrations applied');
 
-    // Seed only if no properties exist yet
-    const { rows } = await client.query('SELECT COUNT(*) FROM properties');
-    if (parseInt(rows[0].count) === 0) {
-      const { seed } = require('./seed');
-      await seed(client);
-    } else {
-      console.log(`✅ Skipping seed — ${rows[0].count} properties already exist`);
-    }
+    // Clear and re-seed properties to pick up photo changes
+    await client.query('DELETE FROM properties');
+    const { seed } = require('./seed');
+    await seed(client);
 
   } catch (err) {
     console.error('❌ Migration error:', err.message);
