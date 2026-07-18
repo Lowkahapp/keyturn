@@ -11,7 +11,7 @@ async function runMigrations() {
     await client.query(sql);
     console.log('✅ Schema applied');
 
-    // Drop geo_location if exists, add lat/lng
+    // Drop geo_location if exists, add lat/lng columns
     await client.query(`
       DO $$ BEGIN
         IF EXISTS (
@@ -32,10 +32,14 @@ async function runMigrations() {
     `);
     console.log('✅ Column migrations applied');
 
-    // Seed data
-    const { seed } = require('./seed');
-    await seed(client);
-    console.log('✅ Seed complete');
+    // Seed only if no properties exist yet
+    const { rows } = await client.query('SELECT COUNT(*) FROM properties');
+    if (parseInt(rows[0].count) === 0) {
+      const { seed } = require('./seed');
+      await seed(client);
+    } else {
+      console.log(`✅ Skipping seed — ${rows[0].count} properties already exist`);
+    }
 
   } catch (err) {
     console.error('❌ Migration error:', err.message);
@@ -43,11 +47,6 @@ async function runMigrations() {
   } finally {
     client.release();
   }
-}
-
-// Allow running directly: node db/migrate.js
-if (require.main === module) {
-  runMigrations().then(() => pool.end()).catch(() => pool.end());
 }
 
 module.exports = { runMigrations };
