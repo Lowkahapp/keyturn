@@ -4,10 +4,10 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS postgis;
 
 -- ─── USERS ────────────────────────────────────────────────────────────────────
-CREATE TYPE user_type_enum AS ENUM ('owner', 'seeker', 'scout', 'admin', 'concierge');
-CREATE TYPE kyc_status_enum AS ENUM ('pending', 'verified', 'rejected');
+DO $$ BEGIN CREATE TYPE user_type_enum AS ENUM ('owner', 'seeker', 'scout', 'admin', 'concierge'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE kyc_status_enum AS ENUM ('pending', 'verified', 'rejected'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id             UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     phone          VARCHAR(15) UNIQUE NOT NULL,
     email          VARCHAR(255) UNIQUE,
@@ -24,7 +24,7 @@ CREATE TABLE users (
 );
 
 -- OTP store (simple, replace with Redis in production)
-CREATE TABLE otp_store (
+CREATE TABLE IF NOT EXISTS otp_store (
     id         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     phone      VARCHAR(15) NOT NULL,
     otp        VARCHAR(6) NOT NULL,
@@ -34,12 +34,12 @@ CREATE TABLE otp_store (
 );
 
 -- ─── PROPERTIES ───────────────────────────────────────────────────────────────
-CREATE TYPE property_type_enum AS ENUM ('apartment', 'villa', 'independent_house', 'pg', 'commercial', 'plot');
-CREATE TYPE transaction_type_enum AS ENUM ('rent', 'sale');
-CREATE TYPE furnishing_enum AS ENUM ('unfurnished', 'semi_furnished', 'fully_furnished');
-CREATE TYPE verification_status_enum AS ENUM ('unverified', 'pending', 'verified', 'rejected', 'expired');
+DO $$ BEGIN CREATE TYPE property_type_enum AS ENUM ('apartment', 'villa', 'independent_house', 'pg', 'commercial', 'plot'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE transaction_type_enum AS ENUM ('rent', 'sale'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE furnishing_enum AS ENUM ('unfurnished', 'semi_furnished', 'fully_furnished'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE verification_status_enum AS ENUM ('unverified', 'pending', 'verified', 'rejected', 'expired'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE TABLE properties (
+CREATE TABLE IF NOT EXISTS properties (
     id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     owner_id            UUID REFERENCES users(id) ON DELETE CASCADE,
     title               VARCHAR(200) NOT NULL,
@@ -75,15 +75,15 @@ CREATE TABLE properties (
     updated_at          TIMESTAMP DEFAULT NOW()
 );
 
-CREATE INDEX idx_properties_city ON properties(city);
-CREATE INDEX idx_properties_geo ON properties USING GIST(geo_location);
-CREATE INDEX idx_properties_verification ON properties(verification_status);
-CREATE INDEX idx_properties_type ON properties(transaction_type, property_type);
+CREATE INDEX IF NOT EXISTS idx_properties_city ON properties(city);
+CREATE INDEX IF NOT EXISTS idx_properties_geo ON properties USING GIST(geo_location);
+CREATE INDEX IF NOT EXISTS idx_properties_verification ON properties(verification_status);
+CREATE INDEX IF NOT EXISTS idx_properties_type ON properties(transaction_type, property_type);
 
 -- ─── VERIFICATIONS ────────────────────────────────────────────────────────────
-CREATE TYPE verification_task_status AS ENUM ('assigned', 'scout_en_route', 'in_progress', 'submitted', 'approved', 'rejected', 'disputed');
+DO $$ BEGIN CREATE TYPE verification_task_status AS ENUM ('assigned', 'scout_en_route', 'in_progress', 'submitted', 'approved', 'rejected', 'disputed'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE TABLE verifications (
+CREATE TABLE IF NOT EXISTS verifications (
     id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     property_id         UUID REFERENCES properties(id) ON DELETE CASCADE,
     scout_id            UUID REFERENCES users(id),
@@ -110,14 +110,14 @@ CREATE TABLE verifications (
 );
 
 -- ─── TRANSACTIONS (DEALS) ─────────────────────────────────────────────────────
-CREATE TYPE deal_status AS ENUM (
+DO $$ BEGIN CREATE TYPE deal_status AS ENUM (
     'interest_shown', 'negotiating', 'agreed',
     'escrow_initiated', 'escrow_funded', 'agreement_drafted',
     'agreement_signed', 'handover_scheduled', 'handover_done',
     'completed', 'disputed', 'cancelled'
-);
+); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE TABLE transactions (
+CREATE TABLE IF NOT EXISTS transactions (
     id                           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     property_id                  UUID REFERENCES properties(id),
     owner_id                     UUID REFERENCES users(id),
@@ -145,9 +145,9 @@ CREATE TABLE transactions (
 );
 
 -- ─── ESCROW ACCOUNTS ──────────────────────────────────────────────────────────
-CREATE TYPE escrow_status AS ENUM ('initiated', 'funded', 'held', 'released_to_owner', 'refunded_to_seeker', 'disputed');
+DO $$ BEGIN CREATE TYPE escrow_status AS ENUM ('initiated', 'funded', 'held', 'released_to_owner', 'refunded_to_seeker', 'disputed'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE TABLE escrow_accounts (
+CREATE TABLE IF NOT EXISTS escrow_accounts (
     id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     transaction_id  UUID REFERENCES transactions(id),
     amount          DECIMAL(15,2) NOT NULL,
@@ -160,9 +160,9 @@ CREATE TABLE escrow_accounts (
 );
 
 -- ─── VISITS ───────────────────────────────────────────────────────────────────
-CREATE TYPE visit_status AS ENUM ('requested', 'confirmed', 'completed', 'cancelled', 'no_show');
+DO $$ BEGIN CREATE TYPE visit_status AS ENUM ('requested', 'confirmed', 'completed', 'cancelled', 'no_show'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE TABLE visits (
+CREATE TABLE IF NOT EXISTS visits (
     id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     property_id   UUID REFERENCES properties(id),
     seeker_id     UUID REFERENCES users(id),
@@ -177,7 +177,7 @@ CREATE TABLE visits (
 );
 
 -- ─── CHAT ROOMS ───────────────────────────────────────────────────────────────
-CREATE TABLE chat_rooms (
+CREATE TABLE IF NOT EXISTS chat_rooms (
     id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     property_id  UUID REFERENCES properties(id),
     owner_id     UUID REFERENCES users(id),
@@ -185,7 +185,7 @@ CREATE TABLE chat_rooms (
     created_at   TIMESTAMP DEFAULT NOW()
 );
 
-CREATE TABLE chat_messages (
+CREATE TABLE IF NOT EXISTS chat_messages (
     id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     room_id      UUID REFERENCES chat_rooms(id) ON DELETE CASCADE,
     sender_id    UUID REFERENCES users(id),
@@ -197,7 +197,7 @@ CREATE TABLE chat_messages (
 );
 
 -- ─── PRICE ESTIMATES ──────────────────────────────────────────────────────────
-CREATE TABLE price_estimates (
+CREATE TABLE IF NOT EXISTS price_estimates (
     id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     property_id        UUID REFERENCES properties(id),
     locality           VARCHAR(100),
@@ -214,10 +214,10 @@ CREATE TABLE price_estimates (
 );
 
 -- ─── PAYMENTS ─────────────────────────────────────────────────────────────────
-CREATE TYPE payment_purpose AS ENUM ('verification_fee', 'escrow_deposit', 'keyturn_success_fee', 'service_payment');
-CREATE TYPE payment_status AS ENUM ('initiated', 'captured', 'failed', 'refunded');
+DO $$ BEGIN CREATE TYPE payment_purpose AS ENUM ('verification_fee', 'escrow_deposit', 'keyturn_success_fee', 'service_payment'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE payment_status AS ENUM ('initiated', 'captured', 'failed', 'refunded'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-CREATE TABLE payments (
+CREATE TABLE IF NOT EXISTS payments (
     id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id             UUID REFERENCES users(id),
     purpose             payment_purpose NOT NULL,
@@ -233,7 +233,7 @@ CREATE TABLE payments (
 );
 
 -- ─── AGREEMENTS ───────────────────────────────────────────────────────────────
-CREATE TABLE agreements (
+CREATE TABLE IF NOT EXISTS agreements (
     id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     transaction_id  UUID REFERENCES transactions(id),
     template_type   VARCHAR(50) DEFAULT 'rental_agreement',
@@ -248,7 +248,7 @@ CREATE TABLE agreements (
 );
 
 -- ─── NOTIFICATIONS ────────────────────────────────────────────────────────────
-CREATE TABLE notifications (
+CREATE TABLE IF NOT EXISTS notifications (
     id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id     UUID REFERENCES users(id) ON DELETE CASCADE,
     title       VARCHAR(200) NOT NULL,
@@ -260,7 +260,7 @@ CREATE TABLE notifications (
 );
 
 -- ─── REVIEWS ──────────────────────────────────────────────────────────────────
-CREATE TABLE reviews (
+CREATE TABLE IF NOT EXISTS reviews (
     id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     reviewer_id   UUID REFERENCES users(id),
     reviewee_id   UUID REFERENCES users(id),
@@ -276,7 +276,7 @@ RETURNS TRIGGER AS $$
 BEGIN NEW.updated_at = NOW(); RETURN NEW; END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER set_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at();
-CREATE TRIGGER set_updated_at BEFORE UPDATE ON properties FOR EACH ROW EXECUTE FUNCTION update_updated_at();
-CREATE TRIGGER set_updated_at BEFORE UPDATE ON transactions FOR EACH ROW EXECUTE FUNCTION update_updated_at();
-CREATE TRIGGER set_updated_at BEFORE UPDATE ON verifications FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+DO $$ BEGIN CREATE TRIGGER set_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at(); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TRIGGER set_updated_at BEFORE UPDATE ON properties FOR EACH ROW EXECUTE FUNCTION update_updated_at(); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TRIGGER set_updated_at BEFORE UPDATE ON transactions FOR EACH ROW EXECUTE FUNCTION update_updated_at(); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TRIGGER set_updated_at BEFORE UPDATE ON verifications FOR EACH ROW EXECUTE FUNCTION update_updated_at(); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
