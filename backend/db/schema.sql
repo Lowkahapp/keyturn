@@ -1,7 +1,11 @@
 -- Enable UUID generation
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
--- Enable PostGIS for geo queries
-CREATE EXTENSION IF NOT EXISTS postgis;
+-- Enable PostGIS for geo queries (optional — skip if not available)
+DO $$ BEGIN
+  CREATE EXTENSION IF NOT EXISTS postgis;
+EXCEPTION WHEN OTHERS THEN
+  RAISE NOTICE 'PostGIS not available, geo features disabled';
+END $$;
 
 -- ─── USERS ────────────────────────────────────────────────────────────────────
 DO $$ BEGIN CREATE TYPE user_type_enum AS ENUM ('owner', 'seeker', 'scout', 'admin', 'concierge'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
@@ -51,7 +55,8 @@ CREATE TABLE IF NOT EXISTS properties (
     city                VARCHAR(50) NOT NULL,
     state               VARCHAR(50) NOT NULL,
     pincode             VARCHAR(6),
-    geo_location        GEOGRAPHY(POINT, 4326),
+    latitude            DECIMAL(10,8),
+    longitude           DECIMAL(11,8),
     bhk                 SMALLINT,
     carpet_area_sqft    INTEGER,
     super_builtup_sqft  INTEGER,
@@ -76,7 +81,7 @@ CREATE TABLE IF NOT EXISTS properties (
 );
 
 CREATE INDEX IF NOT EXISTS idx_properties_city ON properties(city);
-CREATE INDEX IF NOT EXISTS idx_properties_geo ON properties USING GIST(geo_location);
+-- geo index removed (using lat/lng columns instead)
 CREATE INDEX IF NOT EXISTS idx_properties_verification ON properties(verification_status);
 CREATE INDEX IF NOT EXISTS idx_properties_type ON properties(transaction_type, property_type);
 

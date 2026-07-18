@@ -37,12 +37,17 @@ router.get('/', async (req, res) => {
       if (max_budget) { conditions.push(`p.sale_price <= $${i++}`); params.push(max_budget); }
     }
 
-    // Geo proximity filter
+    // Geo proximity filter (simple bounding box, no PostGIS needed)
     let distanceSelect = '';
     if (lat && lng) {
-      conditions.push(`ST_DWithin(p.geo_location, ST_GeogFromText('SRID=4326;POINT($${i++} $${i++})'), $${i++})`);
-      params.push(parseFloat(lng), parseFloat(lat), parseFloat(radius_km) * 1000);
-      distanceSelect = `, ST_Distance(p.geo_location, ST_GeogFromText('SRID=4326;POINT(${lng} ${lat})')) / 1000 AS distance_km`;
+      const r = parseFloat(radius_km) || 5;
+      const latDelta = r / 111;
+      const lngDelta = r / (111 * Math.cos(parseFloat(lat) * Math.PI / 180));
+      conditions.push(`p.latitude BETWEEN $${i} AND $${i+1}`);
+      conditions.push(`p.longitude BETWEEN $${i+2} AND $${i+3}`);
+      params.push(parseFloat(lat) - latDelta, parseFloat(lat) + latDelta,
+                  parseFloat(lng) - lngDelta, parseFloat(lng) + lngDelta);
+      i += 4;
     }
 
     const sortMap = {
@@ -50,7 +55,7 @@ router.get('/', async (req, res) => {
       price_asc:  'COALESCE(p.rent_amount, p.sale_price) ASC',
       price_desc: 'COALESCE(p.rent_amount, p.sale_price) DESC',
       newest:     'p.created_at DESC',
-      distance:   lat && lng ? 'distance_km ASC' : 'p.created_at DESC'
+      distance:   'p.created_at DESC'
     };
 
     const where = conditions.join(' AND ');
