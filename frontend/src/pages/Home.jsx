@@ -4,7 +4,7 @@ import SearchFilters from '../components/SearchFilters';
 import PropertyCard from '../components/PropertyCard';
 import {
   ShieldCheck, IndianRupee, Handshake, SlidersHorizontal,
-  MapPin, Star, CheckCircle2, ArrowRight, Building2, Home, TrendingUp
+  MapPin, Star, CheckCircle2, ArrowRight, Building2, TrendingUp
 } from 'lucide-react';
 
 const SORT_OPTIONS = [
