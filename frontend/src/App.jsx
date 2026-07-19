@@ -12,6 +12,7 @@ import Agreement from './pages/Agreement';
 import Payment from './pages/Payment';
 import Login from './pages/Login';
 import Transactions from './pages/Transactions';
+import AdminDashboard from './pages/AdminDashboard';
 
 const ProtectedRoute = ({ children, roles }) => {
   const { user, loading } = useAuth();
@@ -38,6 +39,7 @@ export default function App() {
         <Route path="/transactions"   element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
         <Route path="/agreement/:id"  element={<ProtectedRoute><Agreement /></ProtectedRoute>} />
         <Route path="/payment/:type/:id" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
+        <Route path="/admin"          element={<ProtectedRoute roles={['admin']}><AdminDashboard /></ProtectedRoute>} />
         <Route path="*"               element={<Navigate to="/" />} />
       </Routes>
     </div>

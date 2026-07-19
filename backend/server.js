@@ -54,6 +54,7 @@ app.use('/api/v1/chat',          require('./routes/chat'));
 app.use('/api/v1/visits',        require('./routes/visits'));
 app.use('/api/v1/price-oracle',  require('./routes/priceOracle'));
 app.use('/api/v1/payments',      require('./routes/payments'));
+app.use('/api/v1/admin',         require('./routes/admin'));
 
 // ─── Health check ─────────────────────────────────────────────────────────────
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date() }));
