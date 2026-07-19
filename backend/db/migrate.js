@@ -32,10 +32,15 @@ async function runMigrations() {
     `);
     console.log('✅ Column migrations applied');
 
-    // Clear and re-seed properties to pick up photo changes
-    await client.query('DELETE FROM properties');
-    const { seed } = require('./seed');
-    await seed(client);
+    // Only seed if properties table is empty (preserves manual/builder listings)
+    const { rows } = await client.query('SELECT COUNT(*) FROM properties');
+    if (parseInt(rows[0].count) === 0) {
+      console.log('🌱 No properties found — seeding...');
+      const { seed } = require('./seed');
+      await seed(client);
+    } else {
+      console.log(`✅ ${rows[0].count} properties already exist — skipping seed`);
+    }
 
   } catch (err) {
     console.error('❌ Migration error:', err.message);
