@@ -2,7 +2,6 @@ const router = require('express').Router();
 const { pool } = require('../config/db');
 const { authenticate, requireRole } = require('../middleware/auth');
 
-// All admin routes require authentication + admin role
 router.use(authenticate, requireRole('admin'));
 
 // ─── STATS ────────────────────────────────────────────────────────────────────
@@ -49,12 +48,14 @@ router.get('/users', async (req, res) => {
     let i = 1;
 
     if (user_type) { conditions.push(`user_type = $${i++}`); params.push(user_type); }
-    if (search)    { conditions.push(`(name ILIKE $${i} OR phone ILIKE $${i} OR email ILIKE $${i})`); params.push(`%${search}%`); i++; }
+    if (search)    { conditions.push(`(name ILIKE $${i} OR phone ILIKE $${i} OR email ILIKE $${i})`); i++; params.push(`%${search}%`); }
 
     const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
+    const limitParam = i++;
+    const offsetParam = i++;
     const { rows } = await pool.query(
       `SELECT id, phone, email, name, user_type, kyc_status, rating, is_active, created_at
-       FROM users ${where} ORDER BY created_at DESC LIMIT $${i++} OFFSET $${i++}`,
+       FROM users ${where} ORDER BY created_at DESC LIMIT $${limitParam} OFFSET $${offsetParam}`,
       [...params, parseInt(limit), parseInt(offset)]
     );
     const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) FROM users ${where}`, params);
@@ -89,15 +90,17 @@ router.get('/properties', async (req, res) => {
 
     if (verification_status) { conditions.push(`p.verification_status = $${i++}`); params.push(verification_status); }
     if (city)                { conditions.push(`p.city ILIKE $${i++}`); params.push(`%${city}%`); }
-    if (search)              { conditions.push(`(p.title ILIKE $${i} OR p.locality ILIKE $${i})`); params.push(`%${search}%`); i++; }
+    if (search)              { conditions.push(`(p.title ILIKE $${i} OR p.locality ILIKE $${i})`); i++; params.push(`%${search}%`); }
 
     const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
+    const limitParam = i++;
+    const offsetParam = i++;
     const { rows } = await pool.query(
       `SELECT p.id, p.title, p.locality, p.city, p.bhk, p.transaction_type,
               p.rent_amount, p.sale_price, p.verification_status, p.is_active,
               p.photos, p.created_at, u.name AS owner_name, u.phone AS owner_phone
        FROM properties p JOIN users u ON p.owner_id = u.id
-       ${where} ORDER BY p.created_at DESC LIMIT $${i++} OFFSET $${i++}`,
+       ${where} ORDER BY p.created_at DESC LIMIT $${limitParam} OFFSET $${offsetParam}`,
       [...params, parseInt(limit), parseInt(offset)]
     );
     const { rows: [{ count }] } = await pool.query(
@@ -133,6 +136,8 @@ router.get('/verifications', async (req, res) => {
     let i = params.length + 1;
 
     const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
+    const limitParam = i++;
+    const offsetParam = i++;
     const { rows } = await pool.query(
       `SELECT v.id, v.status, v.scheduled_at, v.completed_at,
               p.title AS property_title, p.locality, p.city,
@@ -140,7 +145,7 @@ router.get('/verifications', async (req, res) => {
        FROM verifications v
        JOIN properties p ON v.property_id = p.id
        LEFT JOIN users u ON v.scout_id = u.id
-       ${where} ORDER BY v.created_at DESC LIMIT $${i++} OFFSET $${i++}`,
+       ${where} ORDER BY v.created_at DESC LIMIT $${limitParam} OFFSET $${offsetParam}`,
       [...params, parseInt(limit), parseInt(offset)]
     );
     const { rows: [{ count }] } = await pool.query(
@@ -160,6 +165,8 @@ router.get('/transactions', async (req, res) => {
     let i = params.length + 1;
 
     const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
+    const limitParam = i++;
+    const offsetParam = i++;
     const { rows } = await pool.query(
       `SELECT t.id, t.status, t.transaction_type, t.agreed_rent, t.agreed_sale_price,
               t.keyturn_fee, t.created_at,
@@ -169,7 +176,7 @@ router.get('/transactions', async (req, res) => {
        JOIN properties p ON t.property_id = p.id
        JOIN users o ON t.owner_id = o.id
        JOIN users s ON t.seeker_id = s.id
-       ${where} ORDER BY t.created_at DESC LIMIT $${i++} OFFSET $${i++}`,
+       ${where} ORDER BY t.created_at DESC LIMIT $${limitParam} OFFSET $${offsetParam}`,
       [...params, parseInt(limit), parseInt(offset)]
     );
     const { rows: [{ count }] } = await pool.query(
