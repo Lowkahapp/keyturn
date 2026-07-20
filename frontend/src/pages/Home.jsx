@@ -83,7 +83,7 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50">
 
       {/* ── HERO ─────────────────────────────────────────────────────────────── */}
-      <div className="relative bg-gradient-to-br from-primary-800 via-primary-700 to-primary-600 text-white overflow-hidden">
+      <div className="relative bg-gradient-to-br from-primary-800 via-primary-700 to-accent-500 text-white overflow-hidden">
         {/* background pattern */}
         <div className="absolute inset-0 opacity-10"
           style={{ backgroundImage: 'radial-gradient(circle at 25% 50%, white 1px, transparent 1px), radial-gradient(circle at 75% 20%, white 1px, transparent 1px)', backgroundSize: '60px 60px' }} />

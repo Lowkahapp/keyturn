@@ -4,9 +4,24 @@ export default {
     extend: {
       fontFamily: { sans: ['Inter', 'sans-serif'] },
       colors: {
-        primary:  { DEFAULT: '#1D6F42', 50: '#E8F5EE', 100: '#C6E6D1', 200: '#A3D4B8', 500: '#1D6F42', 600: '#165934', 700: '#0F3D24', 800: '#092918' },
-        accent:   { DEFAULT: '#F59E0B', 50: '#FFFBEB', 500: '#F59E0B', 600: '#D97706' },
-        verified: '#059669'
+        primary: {
+          DEFAULT: '#2D5BFF',
+          50:  '#EEF2FF',
+          100: '#C7D4FF',
+          200: '#A0B4FF',
+          500: '#2D5BFF',
+          600: '#1A45E0',
+          700: '#1033C0',
+          800: '#0A22A0',
+        },
+        accent: {
+          DEFAULT: '#4CC9F0',
+          50:  '#E8F9FE',
+          100: '#B8EDFB',
+          500: '#4CC9F0',
+          600: '#1BBDE8',
+        },
+        verified: '#4CC9F0'
       }
     }
   },
