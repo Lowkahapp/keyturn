@@ -5,14 +5,14 @@ export default {
       fontFamily: { sans: ['Inter', 'sans-serif'] },
       colors: {
         primary: {
-          DEFAULT: '#2D5BFF',
-          50:  '#EEF2FF',
-          100: '#C7D4FF',
-          200: '#A0B4FF',
-          500: '#2D5BFF',
-          600: '#1A45E0',
-          700: '#1033C0',
-          800: '#0A22A0',
+          DEFAULT: '#0078d7',
+          50:  '#E6F2FC',
+          100: '#B3D6F5',
+          200: '#80BAEE',
+          500: '#0078d7',
+          600: '#0062B0',
+          700: '#004C8A',
+          800: '#003663',
         },
         accent: {
           DEFAULT: '#4CC9F0',
